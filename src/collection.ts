@@ -198,7 +198,13 @@ internal, do not use
  */
 function createStream(input): Observable<any> {
   return new Observable(observer => {
-    const unsubscribe = input.onSnapshot(observer);
+    let obs: any = observer;
+    let unsubscribe;
+    if (typeof obs.onNext === 'function' && typeof obs.onError === 'function') {
+      unsubscribe = input.onSnapshot(observer);
+    } else if (typeof obs.next === 'function' && typeof obs.error === 'function') {
+      unsubscribe = input.onSnapshot(observer.next.bind(observer), observer.error.bind(observer));
+    }
     return { unsubscribe };
   });
 }
